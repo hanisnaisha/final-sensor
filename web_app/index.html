@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Classroom Safety Monitor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gradient-main: linear-gradient(135deg, #e33838 0%, #ee0909 100%);
+      --gradient-sec: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+      --gradient-blue: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+      --gradient-yellow: linear-gradient(135deg, #e9d061 0%, #ffd200 100%);
+      --gradient-pink: linear-gradient(135deg, #f783d8 0%, #f000cc 100%);
+      --glass-bg: rgba(255, 255, 255, 0.35);
+      --glass-border: linear-gradient(120deg, #232526 0%, #414345 100%);
+      --shadow-3d: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      --bold-green: #00ffb0;
+      --bold-red: #ff0101;
+      --bold-yellow: #ffe600;
+      --bold-blue: #00c6ff;
+      --bold-purple: #a259ff;
+      --bold-orange: #ff6a00;
+      --softpink: #f6dbfa;
+      --greyblue: #ced5e0;
+    }
+
+    body {
+      font-family: 'Montserrat', Arial, sans-serif;
+      background: linear-gradient(135deg, #0a1733 0%, #162447 100%);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto 0 auto;
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .glass-card {
+      background: var(--glass-bg);
+      border-radius: 24px;
+      box-shadow: var(--shadow-3d);
+      border: 1.5px solid var(--glass-border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 32px 36px;
+      margin-bottom: 0;
+      position: relative;
+      transition: transform 0.2s cubic-bezier(.4, 2, .6, 1), box-shadow 0.2s;
+    }
+
+    .glass-card:hover {
+      transform: translateY(-6px) scale(1.03) rotateX(2deg);
+      box-shadow: 0 16px 48px 0 rgba(31, 38, 135, 0.45);
+    }
+
+    .title {
+      text-align: center;
+      font-size: 2.5em;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--softpink);
+      background: none;
+      -webkit-background-clip: unset;
+      -webkit-text-fill-color: unset;
+      margin-bottom: 18px;
+      margin-top: 0;
+    }
+
+    /* 3D Classroom Card */
+    .classroom-3d {
+      background: var(--greyblue);
+      color: #020202;
+      box-shadow: 0 8px 32px 0 rgba(0, 198, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+      padding: 36px 40px;
+      border-radius: 32px;
+      margin-bottom: 0;
+      position: relative;
+      overflow: hidden;
+      perspective: 800px;
+    }
+
+    .classroom-3d .icon {
+      font-size: 4em;
+      filter: drop-shadow(0 4px 16px #00c6ff88);
+      animation: floatY 2.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatY {
+      0% {
+        transform: translateY(0) rotateY(-8deg);
+      }
+
+      100% {
+        transform: translateY(-18px) rotateY(8deg);
+      }
+    }
+
+    .classroom-info {
+      flex: 1;
+    }
+
+    .classroom-status {
+      font-size: 1.3em;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+
+    .classroom-occupied {
+      color: var(--bold-red);
+      text-shadow: 0 2px 8px #68030355;
+    }
+
+    .classroom-empty {
+      color: var(--bold-green);
+      text-shadow: 0 2px 8px #013a2855;
+    }
+
+    .motion-status {
+      font-size: 1.1em;
+      font-weight: 600;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .motion-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--bold-red);
+      box-shadow: 0 0 16px 4px #fe555540;
+      animation: pulse-bright 1.2s infinite alternate;
+      display: inline-block;
+    }
+
+    .motion-inactive {
+      background: var(--bold-green);
+      box-shadow: 0 0 6px 1px #00ffb055;
+      animation: pulse-dim 1.2s infinite alternate;
+    }
+
+    @keyframes pulse-bright {
+      0% {
+        box-shadow: 0 0 16px 4px #ff0000cc;
+        opacity: 0.5;
+      }
+
+      100% {
+        box-shadow: 0 0 32px 12px #ff0000cc;
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulse-dim {
+      0% {
+        box-shadow: 0 0 6px 1px #00ffb055;
+        opacity: 0.5;
+      }
+
+      /*correct, jgn ubah*/
+      100% {
+        box-shadow: 0 0 12px 2px #00ffb0ff;
+        opacity: 1;
+      }
+    }
+
+    /* Live Sensor Tiles */
+    .sensors-tiles {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .sensor-tile {
+      min-width: 170px;
+      min-height: 140px;
+      background: var(--glass-bg);
+      border-radius: 20px;
+      box-shadow: var(--shadow-3d);
+      border: 1.5px solid var(--glass-border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1em;
+      font-weight: 700;
+      margin-bottom: 10px;
+      position: relative;
+      transition: transform 0.18s, box-shadow 0.18s;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .sensor-tile:hover {
+      transform: scale(1.06) rotateZ(-2deg);
+      box-shadow: 0 12px 36px 0 #a259ff55;
+      z-index: 2;
+    }
+
+    .sensor-icon {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      animation: popIn 0.7s;
+    }
+
+    @keyframes popIn {
+      0% {
+        transform: scale(0.7);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .fire-tile {
+      background: var(--gradient-main);
+      color: #fff;
+    }
+
+    .fire-tile.safe {
+      background: var(--gradient-sec);
+      color: #fff;
+    }
+
+    .temp-tile {
+      background: var(--gradient-yellow);
+      color: #fff;
+    }
+
+    .hum-tile {
+      background: var(--gradient-blue);
+      color: #fff;
+    }
+
+    .motion-tile {
+      background: var(--gradient-main);
+      color: #fff;
+    }
+
+    .motion-tile.inactive {
+      background: var(--gradient-sec);
+      color: #232526;
+    }
+
+    /* Sensor detail pop-up */
+    .sensor-detail {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      color: #232526;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px #0002;
+      padding: 10px 18px;
+      font-size: 0.98em;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 10;
+    }
+
+    .sensor-tile:hover .sensor-detail {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* System Info Panel */
+    .system-panel {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      align-items: stretch;
+      margin-top: 10px;
+    }
+
+    .sys-card {
+      flex: 1 1 180px;
+      background: var(--glass-bg);
+      border-radius: 18px;
+      box-shadow: var(--shadow-3d);
+      border: 1.5px solid var(--glass-border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 22px 18px 18px 18px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 1.1em;
+      color: #ffffff;
+      position: relative;
+      margin-bottom: 0;
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+
+    .sys-card .sys-title {
+      font-size: 1.2em;
+      margin-bottom: 8px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #000000;
+      background: none;
+      -webkit-background-clip: unset;
+      -webkit-text-fill-color: unset;
+    }
+
+    .sys-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 12px;
+      font-size: 0.98em;
+      font-weight: 700;
+      margin-top: 8px;
+      background: var(--gradient-pink);
+      color: #fff;
+      box-shadow: 0 2px 8px #ff008055;
+      animation: badgePulse 1.5s infinite alternate;
+    }
+
+    .sys-badge.offline {
+      background: var(--gradient-main);
+      color: #fff;
+      box-shadow: 0 2px 8px #ff000055;
+      animation: none;
+    }
+
+    @keyframes badgePulse {
+      0% {
+        box-shadow: 0 2px 8px #43e97b55;
+      }
+
+      100% {
+        box-shadow: 0 4px 18px #43e97baa;
+      }
+    }
+
+    /* Alert Pop-up */
+    .alert-popup {
+      position: fixed;
+      left: 50%;
+      bottom: 32px;
+      transform: translateX(-50%) scale(1);
+      min-width: 320px;
+      max-width: 90vw;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px 0 #0005;
+      padding: 20px 32px;
+      font-size: 1.2em;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s, transform 0.4s;
+      border: 3px solid var(--bold-green);
+    }
+
+    .alert-popup.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) scale(1.05);
+    }
+
+    .alert-popup.red {
+      border-color: var(--bold-red);
+      background: linear-gradient(90deg, #ff3f3f 0%, #ff0000 100%);
+      color: #fff;
+    }
+
+    .alert-popup.yellow {
+      border-color: var(--bold-yellow);
+      background: linear-gradient(135deg, #e9d061 0%, #ffd200 100%);
+      color: #232526;
+    }
+
+    .alert-popup.green {
+      border-color: var(--bold-green);
+      background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+      color: #232526;
+    }
+
+    .alert-icon {
+      font-size: 2em;
+      filter: drop-shadow(0 2px 8px #0002);
+      animation: popIn 0.7s;
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        padding: 0 2px;
+      }
+
+      .classroom-3d {
+        flex-direction: column;
+        gap: 18px;
+        padding: 24px 10px;
+      }
+
+      .system-panel {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .sensors-tiles {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="title">Smart Classroom Safety Monitor</h1>
+    <!-- Classroom Status -->
+    <div class="glass-card classroom-3d" id="classroomCard">
+      <div class="icon" id="classroomIcon">🚪</div>
+      <div class="classroom-info">
+        <div class="classroom-status" id="classroomStatusText">Classroom Occupied</div>
+        <div class="motion-status">
+          <span class="motion-dot" id="motionDot"></span>
+          <span id="motionStatusText">Person detected in classroom</span>
+        </div>
+      </div>
+    </div>
+    <!-- Live Sensor Data -->
+    <div class="sensors-tiles">
+      <div class="sensor-tile fire-tile" id="fireTile">
+        <div class="sensor-icon" id="fireIcon">🔥</div>
+        <div id="fireStatus">Fire: Normal</div>
+        <div class="sensor-detail" id="fireDetail">No fire detected</div>
+      </div>
+      <div class="sensor-tile temp-tile" id="tempTile">
+        <div class="sensor-icon">🌡️</div>
+        <div id="tempStatus">-- °C</div>
+        <div class="sensor-detail" id="tempDetail">Classroom temperature</div>
+      </div>
+      <div class="sensor-tile hum-tile" id="humTile">
+        <div class="sensor-icon">💧</div>
+        <div id="humStatus">-- %</div>
+        <div class="sensor-detail" id="humDetail">Relative humidity</div>
+      </div>
+      <div class="sensor-tile motion-tile" id="motionTile">
+        <div class="sensor-icon">🕴️</div>
+        <div id="motionStatus">Inactive</div>
+        <div class="sensor-detail" id="motionDetail">No motion detected</div>
+      </div>
+    </div>
+    <!-- System Information -->
+    <div class="system-panel">
+      <div class="sys-card">
+        <div class="sys-title">ESP32</div>
+        <div class="sys-badge" id="espStatus">Online</div>
+      </div>
+      <div class="sys-card" id="relayCard" style="cursor:pointer;">
+        <div class="sys-title">Relay</div>
+        <div class="sys-badge" id="relayStatus">ON</div>
+      </div>
+      <div class="sys-card">
+        <div class="sys-title">Sensors</div>
+        <div class="sys-badge" id="sensorStatus">All Active</div>
+      </div>
+    </div>
+  </div>
+  <!-- Alert Pop-up -->
+  <div class="alert-popup green" id="alertPopup">
+    <span class="alert-icon" id="alertIcon">✅</span>
+    <span id="alertMsg">Classroom is currently safe</span>
+  </div>
+  <script>
+    const sensors = {
+      fire: false,
+      temperature: 22.1,
+      humidity: 61.9,
+      motion: false
+    };
+    const system = {
+      esp32: true,
+      relay: true,
+      sensors: true
+    };
+
+    async function fetchSensorData() {
+      try {
+        const response = await fetch("https://humancc.site/hanisnaisha/finalproject/backend/get_sensor_data.php");
+        const data = await response.json();
+        console.log("Fetched data:", data);
+        // Update sensors object
+        sensors.temperature = parseFloat(data.temperature);
+        sensors.humidity = parseFloat(data.humidity);
+        sensors.fire = data.flame === "1";
+        sensors.motion = data.motion === "1";
+        // Debug parsed values
+        console.log("Parsed temperature:", sensors.temperature, "Parsed humidity:", sensors.humidity);
+        // Update system object
+        system.relay = data.relay === "1";
+        system.esp32 = true;
+        system.sensors = true;
+        // Re-render UI
+        renderClassroom();
+        renderSensors();
+        renderSystem();
+        checkAlerts();
+      } catch (error) {
+        console.error("Error fetching sensor data:", error);
+        system.esp32 = false;
+        system.sensors = false;
+        renderSystem();
+      }
+    }
+
+    // Only render after first fetch
+    fetchSensorData();
+    setInterval(fetchSensorData, 5000); // auto-refresh every 5 seconds
+
+    // Render classroom status
+    function renderClassroom() {
+      const occupied = sensors.motion;
+      document.getElementById('classroomStatusText').textContent = occupied ? 'Classroom Occupied' : 'Classroom Empty';
+      document.getElementById('motionStatusText').textContent = occupied ? 'Person detected in classroom' : 'No person detected in classroom';
+      const dot = document.getElementById('motionDot');
+      if (occupied) {
+        dot.className = 'motion-dot';
+        document.getElementById('classroomIcon').textContent = '🚶‍♂️';
+        document.getElementById('classroomCard').style.background = 'var(--greyblue)';
+      } else {
+        dot.className = 'motion-dot motion-inactive';
+        document.getElementById('classroomIcon').textContent = '🚪';
+        document.getElementById('classroomCard').style.background = 'var(--greyblue)';
+      }
+      document.getElementById('classroomStatusText').className = 'classroom-status ' + (occupied ? 'classroom-occupied' : 'classroom-empty');
+    }
+    // Render live sensor data
+    function renderSensors() {
+      // Fire
+      const fireTile = document.getElementById('fireTile');
+      const fireIcon = document.getElementById('fireIcon');
+      if (sensors.fire) {
+        fireTile.className = 'sensor-tile fire-tile';
+        fireTile.classList.remove('safe');
+        fireTile.classList.add('danger');
+        fireIcon.textContent = '🔥';
+        document.getElementById('fireStatus').textContent = 'Fire: Detected';
+        document.getElementById('fireDetail').textContent = 'Alert';
+      } else {
+        fireTile.className = 'sensor-tile fire-tile safe';
+        fireIcon.textContent = '🔥';
+        document.getElementById('fireStatus').textContent = 'Fire: Normal';
+        document.getElementById('fireDetail').textContent = 'No fire detected';
+      }
+      // Temp
+      document.getElementById('tempStatus').textContent =
+        isNaN(sensors.temperature) ? '-- °C' : `${sensors.temperature} °C`;
+      document.getElementById('tempDetail').textContent = sensors.temperature > 32 ? 'High temperature alert' : 'Classroom temperature';
+      // Humidity
+      document.getElementById('humStatus').textContent =
+        isNaN(sensors.humidity) ? '-- %' : `${sensors.humidity} %`;
+      document.getElementById('humDetail').textContent = 'Relative humidity';
+      // Motion
+      const motionTile = document.getElementById('motionTile');
+      if (sensors.motion) {
+        motionTile.className = 'sensor-tile motion-tile';
+        document.getElementById('motionStatus').textContent = 'Active';
+        document.getElementById('motionDetail').textContent = 'Motion detected';
+      } else {
+        motionTile.className = 'sensor-tile motion-tile inactive';
+        document.getElementById('motionStatus').textContent = 'Inactive';
+        document.getElementById('motionDetail').textContent = 'No motion detected';
+      }
+    }
+    // Render system info
+    function renderSystem() {
+      document.getElementById('espStatus').textContent = system.esp32 ? 'Online' : 'Offline';
+      document.getElementById('espStatus').className = 'sys-badge' + (system.esp32 ? '' : ' Offline');
+      document.getElementById('relayStatus').textContent = system.relay ? 'ON' : 'OFF';
+      document.getElementById('relayStatus').className = 'sys-badge' + (system.relay ? '' : ' Offline');
+      document.getElementById('sensorStatus').textContent = system.sensors ? 'All Active' : 'Inactive';
+      document.getElementById('sensorStatus').className = 'sys-badge' + (system.sensors ? '' : ' Offline');
+    }
+    // Alert pop-up logic
+    function showAlert(type, msg, icon) {
+      const alert = document.getElementById('alertPopup');
+      alert.className = 'alert-popup show ' + type;
+      document.getElementById('alertMsg').textContent = msg;
+      document.getElementById('alertIcon').textContent = icon;
+      setTimeout(() => {
+        alert.classList.remove('show');
+      }, 4000);
+    }
+    function checkAlerts() {
+      if (sensors.fire) {
+        showAlert('red', 'Fire is detected', '🔥');
+      } else if (sensors.temperature > 30) {
+        showAlert('yellow', 'High temperature detected', '⚠️');
+      } else {
+        showAlert('green', 'Classroom is safe', '✅');
+      }
+    }
+    document.getElementById('relayCard').addEventListener('click', async function() {
+      // Toggle relay state
+      const newRelayState = !system.relay;
+      try {
+        // Send request to backend to set relay state
+        const response = await fetch('https://humancc.site/hanisnaisha/finalproject/backend/set_relay.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'relay=' + (newRelayState ? '1' : '0')
+        });
+        const result = await response.json();
+        if (result.success) {
+          system.relay = newRelayState;
+          renderSystem();
+          // Optionally, show a confirmation alert
+          showAlert('green', `Relay turned ${newRelayState ? 'ON' : 'OFF'}`, '✅');
+        } else {
+          showAlert('red', 'Failed to change relay state', '❌');
+        }
+      } catch (error) {
+        showAlert('red', 'Error changing relay state', '❌');
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+
+</html>
